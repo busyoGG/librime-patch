@@ -22,7 +22,7 @@ git clone https://github.com/rime/librime-predict
 git clone https://github.com/lotem/librime-octagram
 cd ..
 
-# 首次不执行（按需执行） 用于重置代码到仓库最新提交
+# 首次不执行（按需执行） 用于重置代码
 git reset --hard 1a1fbbe
 
 # 应用补丁
