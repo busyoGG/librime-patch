@@ -35,3 +35,4 @@ rm -rf ./build && make -j$(nproc) && sudo make install
 ## 演示
 
 ![](./res/input_fix.gif)
+![](./res/caps_fix.gif)
