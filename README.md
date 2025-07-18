@@ -7,7 +7,7 @@ rime漏字现象以及 Caps_Lock 导致无法返回中文输入的临时解决�
 ## 使用方法
 
 ```
-# 第一次执行 克隆 librime 仓库
+# 首次执行 克隆 librime 仓库
 git clone https://github.com/rime/librime.git
 cd librime
 
