@@ -2,7 +2,7 @@
 
 ## 简介
 
-rime漏字现象以及 Caps_Lock 导致无法返回中文输入的临时解决方案
+修复 rime 漏字现象 
 
 ## 使用方法
 
@@ -12,7 +12,7 @@ git clone https://github.com/rime/librime.git
 cd librime
 
 # 切换到特定提交（patch基于该提交制作
-git checkout 1a1fbbe
+git checkout 0ecfc9c
 
 # 首次执行 引入插件
 cd plugins
@@ -23,7 +23,7 @@ git clone https://github.com/lotem/librime-octagram
 cd ..
 
 # 首次不执行（按需执行） 用于重置代码
-git reset --hard 1a1fbbe
+git reset --hard 0ecfc9c
 
 # 应用补丁
 git apply path/to/fix_input.patch

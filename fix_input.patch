@@ -1,97 +1,37 @@
-diff --git a/.gitignore b/.gitignore
-index a2da9784..e6b201b4 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -16,3 +16,4 @@ node_modules/
- .cache/
- *.7z
- .DS_Store
-+.vscode/
-diff --git a/src/rime/engine.cc b/src/rime/engine.cc
-index 9bb948ba..8cd2d367 100644
---- a/src/rime/engine.cc
-+++ b/src/rime/engine.cc
-@@ -96,13 +96,24 @@ ConcreteEngine::~ConcreteEngine() {
-   LOG(INFO) << "engine disposed.";
+From 0c94db4f99814164140ae839c86c9eec60d6d12f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=BD=E6=9C=BD=E6=9C=BD=E6=9C=BD=E6=9C=BD?=
+ <694253220@qq.com>
+Date: Sun, 24 Aug 2025 22:19:39 +0800
+Subject: [PATCH] fix missing character bug
+
+---
+ src/rime/gear/editor.cc | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/src/rime/gear/editor.cc b/src/rime/gear/editor.cc
+index 37b3dda6..511a2fe3 100644
+--- a/src/rime/gear/editor.cc
++++ b/src/rime/gear/editor.cc
+@@ -44,10 +44,17 @@ Editor::Editor(const Ticket& ticket, bool auto_commit)
  }
  
-+bool Engine::IsAsciiPrintable(int keycode) {
-+  return (keycode >= 0x41 && keycode <= 0x5A)      // A-Z
-+         || (keycode >= 0x61 && keycode <= 0x7A);  // a-z
-+}
+ ProcessResult Editor::ProcessKeyEvent(const KeyEvent& key_event) {
+-  if (key_event.release())
+-    return kRejected;
+   int ch = key_event.keycode();
+   Context* ctx = engine_->context();
 +
- bool ConcreteEngine::ProcessKey(const KeyEvent& key_event) {
-   DLOG(INFO) << "process key: " << key_event;
-   ProcessResult ret = kNoop;
-+
-   for (auto& processor : processors_) {
-     ret = processor->ProcessKeyEvent(key_event);
--    if (ret == kRejected)
-+    if (ret == kRejected) {
-+      // 临时修复 阻止漏字上屏
-+      if (context_->IsComposing() && IsAsciiPrintable(key_event.keycode())) {
-+        return true;
-+      }
-       break;
++  if (key_event.release()) {
++    if (ctx->IsComposing() && !key_event.ctrl() && !key_event.alt() &&
++        !key_event.super() && ch > 0x20 && ch < 0x7f) {
++      return kAccepted;
++    } else {
++      return kRejected;
 +    }
-     if (ret == kAccepted)
-       return true;
-   }
-@@ -111,11 +122,17 @@ bool ConcreteEngine::ProcessKey(const KeyEvent& key_event) {
-   // post-processing
-   for (auto& processor : post_processors_) {
-     ret = processor->ProcessKeyEvent(key_event);
--    if (ret == kRejected)
-+    if (ret == kRejected) {
-+      // 临时修复 阻止漏字上屏
-+      if (context_->IsComposing() && IsAsciiPrintable(key_event.keycode())) {
-+        return true;
-+      }
-       break;
-+    }
-     if (ret == kAccepted)
-       return true;
-   }
-+
-   // notify interested parties
-   context_->unhandled_key_notifier()(context_.get(), key_event);
-   return false;
-diff --git a/src/rime/engine.h b/src/rime/engine.h
-index 6b51a68e..fb908e45 100644
---- a/src/rime/engine.h
-+++ b/src/rime/engine.h
-@@ -27,6 +27,8 @@ class Engine : public Messenger {
-   virtual void CommitText(string text) { sink_(text); }
-   virtual void Compose(Context* ctx) {}
- 
-+  bool IsAsciiPrintable(int keycode);
-+
-   Schema* schema() const { return schema_.get(); }
-   Context* context() const { return context_.get(); }
-   CommitSink& sink() { return sink_; }
-diff --git a/src/rime/gear/ascii_composer.cc b/src/rime/gear/ascii_composer.cc
-index e49dc387..3404659f 100644
---- a/src/rime/gear/ascii_composer.cc
-+++ b/src/rime/gear/ascii_composer.cc
-@@ -160,7 +160,8 @@ ProcessResult AsciiComposer::ProcessCapsLock(const KeyEvent& key_event) {
-       // turn it on; for Windows it is the opposite:
-       // Caps Lock modifier has been set before we process VK_CAPITAL.
-       // here we assume IBus' behavior and invert caps with ! operation.
--      SwitchAsciiMode(!key_event.caps(), caps_lock_switch_style_);
-+      caps_lock_pressed_ = !caps_lock_pressed_;
-+      SwitchAsciiMode(caps_lock_pressed_, caps_lock_switch_style_);
-       // When good_old_caps_lock is enabled, allow the key event to pass
-       // through the input method to toggle the Caps Lock state.
-       return good_old_caps_lock_ ? kRejected : kAccepted;
-diff --git a/src/rime/gear/ascii_composer.h b/src/rime/gear/ascii_composer.h
-index 756771ff..69808e30 100644
---- a/src/rime/gear/ascii_composer.h
-+++ b/src/rime/gear/ascii_composer.h
-@@ -53,6 +53,7 @@ class AsciiComposer : public Processor {
-   bool ctrl_key_pressed_ = false;
-   bool alt_key_pressed_ = false;
-   bool super_key_pressed_ = false;
-+  bool caps_lock_pressed_ = false;
-   using TimePoint = std::chrono::steady_clock::time_point;
-   TimePoint toggle_expired_;
-   connection connection_;
++  }
+   if (ctx->IsComposing()) {
+     auto result = KeyBindingProcessor::ProcessKeyEvent(key_event, ctx, 0,
+                                                        FallbackOptions::All);
+-- 
+2.51.0
+
