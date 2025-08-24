@@ -37,5 +37,5 @@ rm -rf ./build && make -j$(nproc) && sudo make install
 ### 漏字
 ![](./res/input_fix.gif)
 
-### 大写锁定
-![](./res/caps_fix.gif)
+<!-- ### 大写锁定
+![](./res/caps_fix.gif) -->
