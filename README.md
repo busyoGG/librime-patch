@@ -3,8 +3,12 @@
 ## 简介
 
 修复 rime 漏字现象 
+修复英文锁定 bug 以及 Electron Wayland 无法删除第一个预编辑字母的 bug (niri环境测试)
 
 ## 使用方法
+
+### rime 漏字
+[fix_input.patch](fix_input.patch)
 
 ```
 # 首次执行 克隆 librime 仓库
@@ -29,7 +33,25 @@ git reset --hard 0ecfc9c
 git apply path/to/fix_input.patch
 
 # 编译安装
-rm -rf ./build && make -j$(nproc) && sudo make install
+make -j$(nproc) && sudo make install
+```
+
+### 英文锁定
+[fix_waylandimserverv2_bug.patch](fix_waylandimserverv2_bug.patch)
+
+```
+# 首次执行 克隆 fcitx5 仓库
+git clone https://github.com/fcitx/fcitx5.git
+cd fcitx5
+# 应用补丁
+git apply path/to/fix_waylandimserverv2_bug.patch
+
+# 编译安装
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+make -j$(nproc)
+sudo make install
 ```
 
 ## 演示
@@ -37,5 +59,5 @@ rm -rf ./build && make -j$(nproc) && sudo make install
 ### 漏字
 ![](./res/input_fix.gif)
 
-<!-- ### 大写锁定
-![](./res/caps_fix.gif) -->
+### 英文锁定
+![](./res/caps_fix.gif)

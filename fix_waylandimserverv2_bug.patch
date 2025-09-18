@@ -1,0 +1,44 @@
+From db24ee744d19a4a50a1b323cf246c09d769c6c72 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=BD=E6=9C=BD=E6=9C=BD=E6=9C=BD=E6=9C=BD?=
+ <694253220@qq.com>
+Date: Thu, 18 Sep 2025 11:52:13 +0800
+Subject: [PATCH] fix WaylandIMInputContextV2's capslock bug and fix preedit
+ bug in electron
+
+---
+ src/frontend/waylandim/waylandimserverv2.cpp | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/src/frontend/waylandim/waylandimserverv2.cpp b/src/frontend/waylandim/waylandimserverv2.cpp
+index 4aeb73f4..51317b5b 100644
+--- a/src/frontend/waylandim/waylandimserverv2.cpp
++++ b/src/frontend/waylandim/waylandimserverv2.cpp
+@@ -538,10 +538,12 @@ void WaylandIMInputContextV2::modifiersCallback(uint32_t /*serial*/,
+                           mods_locked, 0, 0, group);
+     server_->instance()->updateXkbStateMask(
+         server_->group()->display(), mods_depressed, mods_latched, mods_locked);
+-    mask = xkb_state_serialize_mods(
+-        server_->state_.get(),
+-        static_cast<xkb_state_component>(XKB_STATE_MODS_DEPRESSED |
+-                                         XKB_STATE_MODS_LATCHED));
++    // mask = xkb_state_serialize_mods(
++    //     server_->state_.get(),
++    //     static_cast<xkb_state_component>(XKB_STATE_MODS_DEPRESSED |
++    //                                      XKB_STATE_MODS_LATCHED));
++    mask = xkb_state_serialize_mods(server_->state_.get(),
++                                    XKB_STATE_MODS_EFFECTIVE);
+ 
+     server_->modifiers_ = 0;
+     if (mask & server_->stateMask_.shift_mask) {
+@@ -665,7 +667,7 @@ void WaylandIMInputContextV2::updatePreeditDelegate(InputContext *ic) const {
+     }
+ 
+     // Validate not empty and within wayland limit.
+-    if (preedit.textLength() > 0 &&
++    if (preedit.textLength() >= 0 &&
+         preedit.textLength() < WaylandIMServerBase::safeStringLimit) {
+         if (cursorStart < 0) {
+             cursorStart = cursorEnd = preedit.textLength();
+-- 
+2.51.0
+
