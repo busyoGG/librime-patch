@@ -2,8 +2,9 @@
 
 ## 简介
 
-修复 rime 漏字现象 
-修复英文锁定 bug 以及 Electron Wayland 无法删除第一个预编辑字母的 bug (niri环境测试)
+librime: 修复 rime 漏字现象 
+
+fcitx5: 修复英文锁定 bug 以及 Electron Wayland 无法删除第一个预编辑字母的 bug (niri环境测试)
 
 ## 使用方法
 
